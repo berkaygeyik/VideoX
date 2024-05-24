@@ -138,7 +138,8 @@ class Lasot(BaseVideoDataset):
         return self.image_loader(self._get_frame_path(seq_path, frame_id))
 
     def _get_class(self, seq_path):
-        raw_class = seq_path.split('/')[-2]
+        # raw_class = seq_path.split('/')[-2] # LINUX
+        raw_class = seq_path.split('\\')[-2] # WINDOWS
         return raw_class
 
     def get_class_name(self, seq_id):
