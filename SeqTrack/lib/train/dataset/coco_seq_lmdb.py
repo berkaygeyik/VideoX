@@ -48,7 +48,8 @@ class MSCOCOSeq_lmdb(BaseVideoDataset):
         super().__init__('COCO_lmdb', root, image_loader)
         self.root = root
         self.img_pth = 'images/{}{}/'.format(split, version)
-        self.anno_path = 'annotations/instances_{}{}.json'.format(split, version)
+        self.anno_path = 'annotations\\instances_{}{}.json'.format(split, version)
+        # self.anno_path = 'annotations/instances_{}{}.json'.format(split, version) # LINUX
 
         # Load the COCO set.
         print('loading annotations into memory...')
