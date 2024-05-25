@@ -3,6 +3,7 @@ class EnvironmentSettings:
         self.workspace_dir = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack'    # Base directory for saving network checkpoints.
         self.tensorboard_dir = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\tensorboard'    # Directory for tensorboard files.
         self.pretrained_networks = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\pretrained_networks'
+        self.carotidartery_dir = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery'
         self.lasot_dir = 'D:\\data\\lasot'
         self.got10k_dir = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\got10k'
         self.lasot_lmdb_dir = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\lasot_lmdb'

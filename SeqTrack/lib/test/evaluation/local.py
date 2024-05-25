@@ -10,6 +10,7 @@ def local_env_settings():
     settings.got10k_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\got10k'
     settings.got_packed_results_path = ''
     settings.got_reports_path = ''
+    settings.carotidartery_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery'
     settings.lasot_extension_subset_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\lasot_extension_subset'
     settings.lasot_lmdb_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\lasot_lmdb'
     settings.lasot_path = 'D:\\data\\lasot'
