@@ -10,7 +10,7 @@ label_vessel = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidarter
 label_img = nib.load(label) # for plaque, use this one
 label_data = label_img.get_fdata()
 
-# Verinin boyutlarını yazdır
+# Print the shape of data
 print("Shape of data: ", label_data.shape)
 
 # get 200th element
