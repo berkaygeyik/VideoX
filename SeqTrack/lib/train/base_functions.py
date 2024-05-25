@@ -26,12 +26,22 @@ def update_settings(settings, cfg):
 
 def names2datasets(name_list: list, settings, image_loader):
     assert isinstance(name_list, list)
+    print("***************************")
+    print(name_list)
+    print("***************************")
+    
     datasets = []
     for name in name_list:
-        assert name in ["LASOT", "GOT10K_vottrain", "GOT10K_votval", "GOT10K_train_full", "COCO17", "VID", "TRACKINGNET", "IMAGENET1K"]
+        assert name in ["LASOT", "CAROTIDARTERY", "GOT10K_vottrain", "GOT10K_votval", "GOT10K_train_full", "COCO17", "VID", "TRACKINGNET", "IMAGENET1K"]
         if name == "LASOT":
             if settings.use_lmdb:
                 print("Building lasot dataset from lmdb")
+                datasets.append(Lasot_lmdb(settings.env.lasot_lmdb_dir, split='train', image_loader=image_loader))
+            else:
+                datasets.append(Lasot(settings.env.lasot_dir, split='train', image_loader=image_loader))
+        if name == "CAROTIDARTERY":
+            if settings.use_lmdb:
+                print("Building carotidartery dataset from lmdb")
                 datasets.append(Lasot_lmdb(settings.env.lasot_lmdb_dir, split='train', image_loader=image_loader))
             else:
                 datasets.append(Lasot(settings.env.lasot_dir, split='train', image_loader=image_loader))
@@ -74,6 +84,14 @@ def names2datasets(name_list: list, settings, image_loader):
                 datasets.append(TrackingNet(settings.env.trackingnet_dir, image_loader=image_loader))
         if name == "IMAGENET1K":
             datasets.append(Imagenet1k(settings.env.imagenet1k_dir, image_loader=image_loader))
+        # print("--------------")
+        # print("--------------")
+        # print("--------------")
+        # print(datasets)
+        # print("--------------")
+        # print("--------------")
+        # print("--------------")
+
     return datasets
 
 
@@ -111,7 +129,8 @@ def build_dataloaders(cfg, settings):
                                             num_template_frames=settings.num_template, processing=data_processing_train,
                                             frame_sample_mode=sampler_mode
                                             )
-
+    print("dataset_train:")
+    print(cfg.DATA.TRAIN.DATASETS_NAME)
     train_sampler = DistributedSampler(dataset_train) if settings.local_rank != -1 else None
     shuffle = False if settings.local_rank != -1 else True
 
