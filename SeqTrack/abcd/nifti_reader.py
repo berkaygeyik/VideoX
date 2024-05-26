@@ -13,7 +13,7 @@ label_data = label_img.get_fdata()
 label_img_vessel = nib.load(label_vessel_path)
 label_data_vessel = label_img_vessel.get_fdata()
 
-# NIfTI dosyasını yükle
+# Load NIfTI file
 def print_data():
     # Print the shape of data
     print("Shape of data: ", label_data.shape)
