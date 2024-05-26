@@ -3,12 +3,15 @@ import nibabel as nib
 import matplotlib.pyplot as plt
 
 
-label = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\label\\label.nii'
-label_vessel = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\label_vessel\\label_vessel.nii'
+label_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\label\\label.nii'
+label_vessel_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\label_vessel\\label_vessel.nii'
 
 # label_img = nib.load(label_vessel) # for vessel, use this one
-label_img = nib.load(label) # for plaque, use this one
+label_img = nib.load(label_path) # for plaque, use this one
 label_data = label_img.get_fdata()
+
+label_img_vessel = nib.load(label_vessel_path)
+label_data_vessel = label_img_vessel.get_fdata()
 
 # NIfTI dosyasını yükle
 def print_data():
@@ -30,3 +33,6 @@ def print_data():
 
 def get_data():
     return label_data
+
+def get_data_vessel():
+    return label_data_vessel

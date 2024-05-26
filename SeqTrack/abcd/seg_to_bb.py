@@ -1,5 +1,5 @@
 import torch
-from nifti_reader import get_data
+from nifti_reader import get_data, get_data_vessel
 from lib.train.data.bounding_box_utils import masks_to_bboxes, masks_to_bboxes_multi2
 
 # Create bounding boxes from segmentation masks
@@ -20,7 +20,7 @@ def create_bounding_boxes_from_segmentation(segmentation_image):
     return bounding_boxes
 
 
-def create_bounding_boxes(segmentation_array):
+def create_bounding_boxes(segmentation_array, type):
     H, W, _, N = segmentation_array.shape
     all_bounding_boxes = []
     for i in range(N):
@@ -32,7 +32,14 @@ def create_bounding_boxes(segmentation_array):
             bounding_boxes_of_mask.append(bb.numpy())
         all_bounding_boxes.append(bounding_boxes_of_mask)
 
-    with open("bounding_boxes.txt", "w") as f:
+    if type == 'v':
+        file_name = "bounding_boxes_vessel.txt"
+    elif type == 'p':
+        file_name = "bounding_boxes.txt"
+    else:
+        raise Exception('ERROR: Wrong data type!')
+
+    with open(file_name, "w") as f:
         for i, bboxes in enumerate(all_bounding_boxes):
             count=0
             for bb in bboxes:
@@ -45,8 +52,7 @@ def create_bounding_boxes(segmentation_array):
 # Example usage
 if __name__ == "__main__":
     segmentation_array = get_data()
-    
-    segmentation_image = segmentation_array[:, :, 0, 210]
-    print(segmentation_array.shape)
-    
-    create_bounding_boxes(segmentation_array)
+    segmentation_array_vessel = get_data_vessel()
+
+    create_bounding_boxes(segmentation_array, 'p')
+    create_bounding_boxes(segmentation_array_vessel, 'v')
