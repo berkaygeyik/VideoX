@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data.distributed import DistributedSampler
 # datasets related
-from lib.train.dataset import Lasot, Got10k, MSCOCOSeq, ImagenetVID, TrackingNet, Imagenet1k
+from lib.train.dataset import Lasot, Carotidartery, Got10k, MSCOCOSeq, ImagenetVID, TrackingNet, Imagenet1k
 from lib.train.dataset import Lasot_lmdb, Got10k_lmdb, MSCOCOSeq_lmdb, ImagenetVID_lmdb, TrackingNet_lmdb
 from lib.train.data import sampler, opencv_loader, processing, LTRLoader
 import lib.train.data.transforms as tfm
@@ -41,10 +41,11 @@ def names2datasets(name_list: list, settings, image_loader):
                 datasets.append(Lasot(settings.env.lasot_dir, split='train', image_loader=image_loader))
         if name == "CAROTIDARTERY":
             if settings.use_lmdb:
-                print("Building carotidartery dataset from lmdb")
-                datasets.append(Lasot_lmdb(settings.env.lasot_lmdb_dir, split='train', image_loader=image_loader))
+                raise Exception('ERROR: Not implemented!') 
+                # print("Building lasot dataset from lmdb")
+                # datasets.append(Lasot_lmdb(settings.env.lasot_lmdb_dir, split='train', image_loader=image_loader))
             else:
-                datasets.append(Lasot(settings.env.lasot_dir, split='train', image_loader=image_loader))
+                datasets.append(Carotidartery(settings.env.carotidartery_dir, split='train', image_loader=image_loader))
         if name == "GOT10K_vottrain":
             if settings.use_lmdb:
                 print("Building got10k from lmdb")
