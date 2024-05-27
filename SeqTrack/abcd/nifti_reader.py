@@ -3,8 +3,8 @@ import nibabel as nib
 import matplotlib.pyplot as plt
 
 
-label_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\label\\label.nii'
-label_vessel_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\label_vessel\\label_vessel.nii'
+label_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\carotid-1\\label\\label.nii'
+label_vessel_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\carotid-1\\label_vessel\\label_vessel.nii'
 
 # label_img = nib.load(label_vessel) # for vessel, use this one
 label_img = nib.load(label_path) # for plaque, use this one
