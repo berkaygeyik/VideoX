@@ -93,17 +93,3 @@ def masks_to_bboxes_multi(mask, ids, fmt='c'):
         bboxes.append(bb)
 
     return bboxes
-
-def masks_to_bboxes_multi2(mask):
-    """
-    Convert a mask tensor to multiple bounding boxes.
-    :param mask: Tensor of masks, shape = (H, W)
-    :return: list of tensors containing bounding boxes, shape = (N, 4) where N is the number of objects
-    """
-    num_labels, labels, stats, centroids = cv.connectedComponentsWithStats(mask.astype(np.uint8), connectivity=8)
-    bboxes = []
-    for i in range(1, num_labels):  # skip the background
-        x, y, w, h, area = stats[i]
-        bbox = torch.tensor([x, y, w, h], dtype=torch.float32)
-        bboxes.append(bbox)
-    return bboxes
