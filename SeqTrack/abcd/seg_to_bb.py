@@ -1,6 +1,6 @@
 import torch
-from nifti_reader import get_data, get_data_vessel
-from lib.train.data.bounding_box_utils import masks_to_bboxes, masks_to_bboxes_multi2
+from image_reader import get_data, print_data
+from lib.train.data.bounding_box_utils import masks_to_bboxes
 
 # Create bounding boxes from segmentation masks
 def create_bounding_box_from_segmentation(segmentation_image):
@@ -11,48 +11,45 @@ def create_bounding_box_from_segmentation(segmentation_image):
     """
     segmentation_tensor = torch.tensor(segmentation_image, dtype=torch.float32)
     bounding_box = masks_to_bboxes(segmentation_tensor, fmt='t')
-    return bounding_box
+    return bounding_box.numpy()
 
-def create_bounding_boxes_from_segmentation(segmentation_image):
+# def create_bounding_boxes_from_segmentation(segmentation_image):
 
-    segmentation_tensor = torch.tensor(segmentation_image, dtype=torch.float32)
-    bounding_boxes = masks_to_bboxes_multi2(segmentation_tensor.numpy())
-    return bounding_boxes
+#     segmentation_tensor = torch.tensor(segmentation_image, dtype=torch.float32)
+#     bounding_boxes = masks_to_bboxes_multi2(segmentation_tensor.numpy())
+#     return bounding_boxes
 
 
 def create_bounding_boxes(segmentation_array, type):
-    H, W, _, N = segmentation_array.shape
+    N, H, W = segmentation_array.shape
+
     all_bounding_boxes = []
     for i in range(N):
-        segmentation_mask = segmentation_array[:, :, 0, i]
-        bounding_boxes = create_bounding_boxes_from_segmentation(segmentation_mask)
+        segmentation_mask = segmentation_array[i, :, :]
+        bounding_box = create_bounding_box_from_segmentation(segmentation_mask)
+        all_bounding_boxes.append(bounding_box)
 
-        bounding_boxes_of_mask = []
-        for bb in bounding_boxes:
-            bounding_boxes_of_mask.append(bb.numpy())
-        all_bounding_boxes.append(bounding_boxes_of_mask)
-
-    if type == 'v':
-        file_name = "bounding_boxes_vessel.txt"
-    elif type == 'p':
-        file_name = "bounding_boxes.txt"
-    else:
-        raise Exception('ERROR: Wrong data type!')
-
+    file_name = "bounding_boxes_vessel.txt"
+    img_index = 0 # index 206, 207th image
     with open(file_name, "w") as f:
-        for i, bboxes in enumerate(all_bounding_boxes):
-            count=0
-            for bb in bboxes:
-                bb_str = " ".join(map(str, bb))
-                f.write(f"{i+1}:{bb_str}\n")
-                count+=1
-            if count == 0: # remove here to remove empty images from output
-                f.write(f"{i+1}:\n")
+        for i, bbox in enumerate(all_bounding_boxes):
+            bb_str = " ".join(map(str, bbox))
+            f.write(f"{bb_str}\n")
+                
+            if(i == img_index and type == "v"):
+                print_data(i, bbox)
+
+def create_zeros(segmentation_array):
+    H, W, _, N = segmentation_array.shape
+    with open("zeros.txt", "w") as file:
+        for i in range(N):
+            file.write("0")
+            if i != N-1:
+                file.write(",")
 
 # Example usage
 if __name__ == "__main__":
     segmentation_array = get_data()
-    segmentation_array_vessel = get_data_vessel()
 
-    create_bounding_boxes(segmentation_array, 'p')
-    create_bounding_boxes(segmentation_array_vessel, 'v')
+    create_bounding_boxes(segmentation_array, 'v')
+    create_zeros(segmentation_array)
