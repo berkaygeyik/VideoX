@@ -24,6 +24,7 @@ DATA:
     DATASETS_NAME:
     - LASOT
     - GOT10K_vottrain
+    - CAROTIDARTERY
     - COCO17
     - TRACKINGNET
     DATASETS_RATIO:

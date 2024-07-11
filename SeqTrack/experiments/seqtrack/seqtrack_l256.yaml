@@ -23,6 +23,7 @@ DATA:
   TRAIN:
     DATASETS_NAME:
     - LASOT
+    - CAROTIDARTERY
     - GOT10K_vottrain
     - COCO17
     - TRACKINGNET

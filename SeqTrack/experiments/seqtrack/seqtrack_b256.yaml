@@ -23,15 +23,17 @@ DATA:
   TRAIN:
     DATASETS_NAME:
     - LASOT
+    - CAROTIDARTERY
     - GOT10K_vottrain
     - COCO17
     - TRACKINGNET
     DATASETS_RATIO:
+    - 0
     - 1
-    - 1
-    - 1
-    - 1
-    SAMPLE_PER_EPOCH: 60000
+    - 0
+    - 0
+    - 0
+    SAMPLE_PER_EPOCH: 12000
 MODEL:
   ENCODER:
     TYPE: vit_base_patch16
@@ -43,7 +45,7 @@ MODEL:
   FEATURE_TYPE: x
 TRAIN:
   ENCODER_MULTIPLIER: 0.1
-  BATCH_SIZE: 16
+  BATCH_SIZE: 3
   EPOCH: 500
   GRAD_CLIP_NORM: 0.1
   CE_WEIGHT: 1.0
