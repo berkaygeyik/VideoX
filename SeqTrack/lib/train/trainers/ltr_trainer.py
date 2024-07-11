@@ -9,6 +9,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.cuda.amp import autocast
 from torch.cuda.amp import GradScaler
 import lib.utils.misc as misc
+import matplotlib.pyplot as plt
 
 
 class LTRTrainer(BaseTrainer):
@@ -40,6 +41,9 @@ class LTRTrainer(BaseTrainer):
         self.use_amp = use_amp
         if use_amp:
             self.scaler = GradScaler()
+
+        # Loss history for plotting
+        self.history = {'loss': {}, 'iou': {}}
 
     def _set_default_settings(self):
         # Dict of all default values
@@ -111,6 +115,10 @@ class LTRTrainer(BaseTrainer):
         self._stats_new_epoch()
         if self.settings.local_rank in [-1, 0]:
             self._write_tensorboard()
+        print("completed")
+        # Plot loss after each epoch
+        self.plot_loss()
+        self.plot_iou()
 
     def _init_timing(self):
         self.num_frames = 0
@@ -143,6 +151,11 @@ class LTRTrainer(BaseTrainer):
                     # else:
                     #     print_str += '%s: %r  ,  ' % (name, val)
 
+                # Record loss
+                if name == "Loss/total":
+                    self.record_values(loader, val.avg, "loss")
+                if name == "IoU":
+                    self.record_values(loader, val.avg, "iou")   
             print(print_str[:-5])
             log_str = print_str[:-5] + '\n'
             if misc.is_main_process():
@@ -176,3 +189,90 @@ class LTRTrainer(BaseTrainer):
             self.tensorboard_writer.write_info(self.settings.script_name, self.settings.description)
 
         self.tensorboard_writer.write_epoch(self.stats, self.epoch)
+        
+    def plot_loss(self):
+        # epochs = [6.8604121589660645, 6.658260054588318, 6.44973708152771, 6.367091581821442, 6.323363452911377, 6.310667231877645, 6.270703454698835, 6.24242527961731, 6.205339643690321, 6.17610852432251, 6.16202563979409, 6.1403181052207945, 6.129853204580454, 6.108130395071847, 6.090022206624349, 6.078288774490357, 6.068869955960442, 6.058121303982205, 6.046297592363859, 6.0339844455719, 6.028554473150344, 6.022225131121549, 6.012605551844058, 6.00549214720726, 6.002628485488891, 5.995079770454994, 5.990020482451827, 5.990826178278242, 5.986564808549552, 5.979036819775899, 5.9711181726763325, 5.966976551115513]
+        
+        loss_values = [loss for loss in self.history['loss'][self.epoch]]
+        
+        plt.figure(figsize=(10, 5))
+        plt.plot(loss_values, label='Loss/Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.title('Loss over Epochs')
+        plt.legend()
+
+        os.makedirs(os.path.dirname("./charts/seqtrack-seqtrack_b256/loss"), exist_ok=True)
+    
+        # Saving the plot as a PNG file to the specified path
+        plt.savefig("./charts/seqtrack-seqtrack_b256/loss/loss_train" + str(self.epoch) + ".png")
+
+        plt.close()
+
+    def plot_loss_checkpoint(self):
+        # Getting loss values for the last 10 epochs
+
+        loss_values = []
+        for i in range(self.epoch - 10, self.epoch):
+            loss_values.extend(self.history['loss'][i])
+        
+        print("loss_values")
+        print(loss_values)
+
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(loss_values, label='Loss/Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.title('Loss over the Last Checkpoint')
+        plt.legend()
+        
+        os.makedirs(os.path.dirname("./charts/seqtrack-seqtrack_b256/loss"), exist_ok=True)
+        
+        # Saving the plot as a PNG file to the specified path
+        plt.savefig(f"./charts/seqtrack-seqtrack_b256/loss/loss_train_last_checkpoint.png")
+        plt.close()
+
+    def plot_iou(self):
+        iou_values = [iou for iou in self.history['iou'][self.epoch]]
+    
+        # Creating epoch values starting from 50 and incrementing by 50
+        epochs = list(range(self.settings.print_interval, self.settings.print_interval * (len(iou_values) + 1), self.settings.print_interval))
+        
+        plt.figure(figsize=(10, 5))
+        plt.plot(epochs, iou_values, label='IoU/Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Iou')
+        plt.title('Iou over Epochs')
+        plt.legend()
+        plt.xticks(epochs)
+
+        os.makedirs(os.path.dirname("./charts/seqtrack-seqtrack_b256/iou"), exist_ok=True)
+    
+        # Saving the plot as a PNG file to the specified path
+        plt.savefig("./charts/seqtrack-seqtrack_b256/iou/iou_train" + str(self.epoch) + ".png")
+
+        plt.close()
+
+    def plot_iou_checkpoint(self):
+        # Getting iou values for the last 10 epochs
+        iou_values = self.history['iou'][self.epoch][-10:]
+        
+        plt.figure(figsize=(10, 5))
+        plt.plot(iou_values, label='IoU/Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Iou')
+        plt.title('Iou over the Last Checkpoint')
+        plt.legend()
+        
+        os.makedirs(os.path.dirname("./charts/seqtrack-seqtrack_b256/iou"), exist_ok=True)
+        
+        # Saving the plot as a PNG file to the specified path
+        plt.savefig(f"./charts/seqtrack-seqtrack_b256/iou/iou_train_last_checkpoint.png")
+        plt.close()
+
+    def record_values(self, loader, val, phase):
+        if loader.training:
+            if self.epoch not in self.history[phase]:
+                self.history[phase][self.epoch] = []
+            self.history[phase][self.epoch].append(val)
