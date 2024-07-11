@@ -6,7 +6,9 @@ from lib.test.analysis.plot_results import plot_results, print_results, print_pe
 from lib.test.evaluation import get_dataset, trackerlist
 
 trackers = []
-dataset_name = 'lasot' # choosen from 'uav', 'nfs', 'lasot_extension_subset', 'lasot'
+# dataset_name = 'lasot' # choosen from 'uav', 'nfs', 'lasot_extension_subset', 'lasot' 
+
+dataset_name = 'carotidartery'
 
 trackers.extend(trackerlist(name='seqtrack', parameter_name='seqtrack_b256', dataset_name=dataset_name,
                             run_ids=None, display_name='seqtrack_b256'))
