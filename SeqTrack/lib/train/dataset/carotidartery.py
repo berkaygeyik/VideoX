@@ -14,30 +14,18 @@ class Carotidartery(BaseVideoDataset):
 
     def __init__(self, root=None, image_loader=jpeg4py_loader, vid_ids=None, split=None, data_fraction=None):
         
-        print("************************")
         root = env_settings().carotidartery.dir if root is None else root
         super().__init__('Carotidartery', root, image_loader)
         # Keep a list of all classes
         self.class_list = [f for f in os.listdir(self.root)]
         self.class_to_id = {cls_name: cls_id for cls_id, cls_name in enumerate(self.class_list)}
-        print("classlist")
-        print(self.class_list)
-        print("classtoid")
-        print(self.class_to_id)
 
         self.sequence_list = self._build_sequence_list(vid_ids, split)
-
-        print("sequence list")
-        print(self.sequence_list)
 
         if data_fraction is not None:
             self.sequence_list = random.sample(self.sequence_list, int(len(self.sequence_list)*data_fraction))
 
         self.seq_per_class = self._build_class_list()
-        print("seqperclass")
-        print(self.seq_per_class)
-
-        print("---------************************------------")
 
     def _build_sequence_list(self, vid_ids=None, split=None):
         sequence_list = []
@@ -47,7 +35,6 @@ class Carotidartery(BaseVideoDataset):
             ltr_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
             if split == 'train':
                 file_path = os.path.join(ltr_path, 'data_specs', 'carotidartery_train_split.txt')
-                # print(file_path)
             else:
                 raise ValueError('Unknown split name.')
             # sequence_list = pandas.read_csv(file_path, header=None, squeeze=True).values.tolist()
@@ -89,15 +76,9 @@ class Carotidartery(BaseVideoDataset):
         return self.seq_per_class[class_name]
     
     def _get_sequence_path(self, seq_id):
-        print("getsequencepath---")
-        print(seq_id)
         seq_name = self.sequence_list[seq_id]
-        print(seq_name)
         class_name = seq_name.split('-')[0]
-        print(class_name)
         vid_id = seq_name.split('-')[1]
-        print(vid_id)
-        print("---getsequencepath")
 
         return os.path.join(self.root, class_name + '-' + vid_id)
 
@@ -126,29 +107,8 @@ class Carotidartery(BaseVideoDataset):
         return {'bbox': bbox, 'valid': valid, 'visible': visible}
     
     def _read_bb_anno(self, seq_path):
-        bb_anno_file = os.path.join(seq_path, "bounding_boxes.txt")
-        print("bb_anno_file")
-        print("bb_anno_file")
-        print(bb_anno_file)
-        print("bb_anno_file")
-        print("bb_anno_file")
-
-        data = []
-
-        with open(bb_anno_file, 'r') as file:
-            for line in file:
-                parts = line.strip().split(':')
-                if len(parts) > 1:
-                    right_part = parts[1].strip()
-                    if right_part:
-                        numbers = [float(num) for num in right_part.split()]
-                    else:
-                        numbers = [0, 0, 0, 0]
-                else:
-                    numbers = [0, 0, 0, 0]
-                data.append(numbers)
-
-        gt = np.array(data)
+        bb_anno_file = os.path.join(seq_path, "bounding_boxes_vessel.txt")
+        gt = pandas.read_csv(bb_anno_file, delimiter=' ', header=None, dtype=np.float32, na_filter=False, low_memory=False).values
         return torch.tensor(gt)
     
     def _get_frame_path(self, seq_path, frame_id):
@@ -158,11 +118,8 @@ class Carotidartery(BaseVideoDataset):
         return self.image_loader(self._get_frame_path(seq_path, frame_id))
 
     def _get_class(self, seq_path):
-        # raw_class = seq_path.split('/')[-2] # LINUX
-        raw_class = seq_path.split('\\')[-2] # WINDOWS
-        print("raw_class--")
-        print(raw_class)
-        print("--raw_class")
+        raw_class = seq_path.split('/')[-2] # LINUX
+        # raw_class = seq_path.split('\\')[-2] # WINDOWS
 
         return raw_class
 
@@ -173,17 +130,10 @@ class Carotidartery(BaseVideoDataset):
         return obj_class
 
     def get_frames(self, seq_id, frame_ids, anno=None):
-        print("getframes---")
-        print(seq_id)
-        print(frame_ids)
         seq_path = self._get_sequence_path(seq_id)
-        print(seq_path)
         
         obj_class = self._get_class(seq_path)
-        print(obj_class)
         frame_list = [self._get_frame(seq_path, f_id) for f_id in frame_ids]
-        print(frame_list)
-        print("---getframes")
         if anno is None:
             anno = self.get_sequence_info(seq_id)
 
