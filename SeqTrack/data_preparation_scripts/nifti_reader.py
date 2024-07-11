@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 
-label_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\carotid-1\\label\\label.nii'
-label_vessel_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\carotid-1\\label_vessel\\label_vessel.nii'
+label_path = '/home/linux/VideoX/SeqTrack/data/carotidartery/carotid-1/label/label.nii'
+label_vessel_path = '/home/linux/VideoX/SeqTrack/data/carotidartery/carotid-1/label_vessel/label_vessel.nii'
 
 # label_img = nib.load(label_vessel) # for vessel, use this one
 label_img = nib.load(label_path) # for plaque, use this one

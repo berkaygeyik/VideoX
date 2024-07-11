@@ -15,15 +15,15 @@ def load_images_from_folder(folder_path):
             images.append(img_array)
     return np.array(images)
 
-folder_path = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\carotid-1\\label_vessel'
-label_data = load_images_from_folder(folder_path)
+folder_path = '/home/linux/VideoX/SeqTrack/data/carotidartery/'
+label_data_sample = load_images_from_folder('/home/linux/VideoX/SeqTrack/data/carotidartery/carotid-2/label')
 
 
 def print_data(img_index, bbox = []):
     # Print the shape of data
-    print("Shape of data: ", label_data.shape)
+    print("Shape of data: ", label_data_sample.shape)
     # get 200th element
-    slice_207 = label_data[img_index, :, :]
+    slice_207 = label_data_sample[img_index, :, :]
     slice_207_transposed = slice_207.astype(float)
 
     plt_title = f"modified image {img_index + 1}"
@@ -41,8 +41,8 @@ def print_data(img_index, bbox = []):
     plt.show()
 
 
-def get_data():
-    return label_data.astype(float)
+def get_data(i):
+    return load_images_from_folder(folder_path + "carotid-" + str(i) + "/label").astype(float)
 
 # print(label_data.shape)
 # print(label_data[207][200][300][0])

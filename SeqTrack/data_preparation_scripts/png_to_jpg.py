@@ -1,13 +1,13 @@
 import os
 from PIL import Image
 
-# input_folder = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\carotid-1\\img_png'
-# output_folder = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\carotid-1\\img'
+# input_folder = '/home/linux/VideoX/SeqTrack/data/carotidartery/carotid-1/img_png'
+# output_folder = '/home/linux/VideoX/SeqTrack/data/carotidartery/carotid-1/img'
 
 # Folder containing PNG files
-input_folder = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\carotid-1\\label_vessel'
+input_folder = '/home/linux/VideoX/SeqTrack/data/carotidartery/carotid-1/label_vessel'
 # Folder where JPG files will be saved
-output_folder = 'C:\\Users\\berka\\OneDrive\\VideoX\\SeqTrack\\data\\carotidartery\\carotid-1\\label'
+output_folder = '/home/linux/VideoX/SeqTrack/data/carotidartery/carotid-1/label'
 
 # If the output folder does not exist, create it
 if not os.path.exists(output_folder):
