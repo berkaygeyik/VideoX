@@ -193,6 +193,18 @@ class BaseTrainer:
         # Load network
         checkpoint_dict = torch.load(checkpoint_path, map_location='cpu')
 
+        # add some default values
+        if 'epoch' not in checkpoint_dict:
+            checkpoint_dict['epoch'] = 10  # Default value or fetch from elsewhere if available
+        if 'actor_type' not in checkpoint_dict:
+            checkpoint_dict['actor_type'] = actor_type
+        if 'net_type' not in checkpoint_dict:
+            checkpoint_dict['net_type'] = net_type
+        if 'optimizer' not in checkpoint_dict:
+            checkpoint_dict['optimizer'] = self.optimizer.state_dict()  # Assuming self.optimizer exists
+        if 'settings' not in checkpoint_dict:
+            checkpoint_dict['settings'] = self.settings  # Assuming self.settings exists
+
         assert net_type == checkpoint_dict['net_type'], 'Network is not of correct type.'
 
         if fields is None:
