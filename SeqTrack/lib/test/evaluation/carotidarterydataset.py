@@ -23,7 +23,6 @@ class CarotidarteryDataset(BaseDataset):
 
 
     def _construct_sequence(self, sequence_name):
-        print("function 1")
         anno_path = '{}/{}/bounding_boxes_vessel.txt'.format(self.base_path, sequence_name)
         # print(anno_path)
         ground_truth_rect = load_text(str(anno_path), delimiter=' ', dtype=np.float64)
