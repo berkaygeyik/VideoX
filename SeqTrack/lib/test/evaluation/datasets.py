@@ -20,8 +20,8 @@ dataset_dict = dict(
     lasot_lmdb=DatasetInfo(module=pt % "lasot_lmdb", class_name="LaSOTlmdbDataset", kwargs=dict()),
     lasot_extension_subset = DatasetInfo(module=pt % "lasotextensionsubset", class_name="LaSOTExtensionSubsetDataset",
                                          kwargs=dict()),
-    tnl2k=DatasetInfo(module=pt % "tnl2k", class_name="TNL2kDataset", kwargs=dict())
-
+    tnl2k=DatasetInfo(module=pt % "tnl2k", class_name="TNL2kDataset", kwargs=dict()),
+    carotidartery=DatasetInfo(module=pt % "carotidartery", class_name="CarotidarteryDataset", kwargs=dict())
 )
 
 
