@@ -36,21 +36,17 @@ class TrackingSampler(torch.utils.data.Dataset):
             train_cls - this is for Stark-ST, should be False for SeqTrack.
 
         """
-        print("--------------------- 0")
-
         self.datasets = datasets
         self.train_cls = train_cls  # whether we are training classification
         self.pos_prob = pos_prob  # probability of sampling positive class when making classification
-        print("--------------------- 1")
+
         # If p not provided, sample uniformly from all videos
         if p_datasets is None:
             p_datasets = [len(d) for d in self.datasets]
-        print("--------------------- 2")
 
         # Normalize
         p_total = sum(p_datasets)
         self.p_datasets = [x / p_total for x in p_datasets]
-        print("--------------------- 3")
 
         self.samples_per_epoch = samples_per_epoch
         self.max_gap = max_gap
@@ -58,7 +54,6 @@ class TrackingSampler(torch.utils.data.Dataset):
         self.num_template_frames = num_template_frames
         self.processing = processing
         self.frame_sample_mode = frame_sample_mode
-        print("--------------------- 4")
 
     def __len__(self):
         return self.samples_per_epoch
@@ -112,16 +107,8 @@ class TrackingSampler(torch.utils.data.Dataset):
         count_valid = 0
         while not valid:
             # Select a dataset
-            # dataset = random.choices(self.datasets, self.p_datasets)[0]
-            print(self.datasets)
-            print("---------------")
-            print("---------------")
-            print("---------------")
-            print("---------------")
-            print("---------------")
-            print("---------------")
-            dataset = random.choices(self.datasets, [0, 1, 0, 0, 0])[0]
-            # Berkay TODO: only fetch the lasot data
+            dataset = random.choices(self.datasets, self.p_datasets)[0]          
+            # dataset = random.choices(self.datasets, [0, 1, 0, 0, 0])[0] # update p_datasets -> DATASETS_RATIO (in seqtrack_b256.yml)
             is_video_dataset = dataset.is_video_sequence()
 
             # sample a sequence from the given dataset
@@ -169,20 +156,11 @@ class TrackingSampler(torch.utils.data.Dataset):
                 template_frame_ids = [1] * self.num_template_frames
                 search_frame_ids = [1] * self.num_search_frames
             try:
-                print("hata 1")
                 template_frames, template_anno, meta_obj_train = dataset.get_frames(seq_id, template_frame_ids, seq_info_dict)
-                print("template_frames")
-                print(template_frames)
-                print(template_anno)
-                print("hata 2")
                 search_frames, search_anno, meta_obj_test = dataset.get_frames(seq_id, search_frame_ids, seq_info_dict)
-                print("hata 3")
                 H, W, _ = template_frames[0].shape
-                print("hata 4")
                 template_masks = template_anno['mask'] if 'mask' in template_anno else [torch.zeros((H, W))] * self.num_template_frames
-                print("hata 5")
                 search_masks = search_anno['mask'] if 'mask' in search_anno else [torch.zeros((H, W))] * self.num_search_frames
-                print("hata 6")
                 data = TensorDict({'template_images': template_frames,
                                    'template_anno': template_anno['bbox'],
                                    'template_masks': template_masks,
@@ -191,13 +169,10 @@ class TrackingSampler(torch.utils.data.Dataset):
                                    'search_masks': search_masks,
                                    'dataset': dataset.get_name(),
                                    'test_class': meta_obj_test.get('object_class_name')})
-                # print("1: ", data["valid"])
                 # make data augmentation
                 data = self.processing(data)
-                # print("2: ", data["valid"])
                 # check whether data is valid
                 valid = data['valid']
-                print(valid)
             except:
                 valid = False
 
@@ -238,8 +213,8 @@ class TrackingSampler(torch.utils.data.Dataset):
         label = None
         while not valid:
             # Select a dataset
-            # dataset = random.choices(self.datasets, self.p_datasets)[0]
-            dataset = random.choices(self.datasets, [1, 0, 0, 0, 0])[0]
+            dataset = random.choices(self.datasets, self.p_datasets)[0]
+            # dataset = random.choices(self.datasets, [1, 0, 0, 0, 0])[0]
             
             is_video_dataset = dataset.is_video_sequence()
 
@@ -322,7 +297,6 @@ class TrackingSampler(torch.utils.data.Dataset):
         while not enough_visible_frames:
             # Sample a sequence
             seq_id = random.randint(0, dataset.get_num_sequences() - 1)
-            print(seq_id)
             # seq_id = random.randint(0, 112 - 1)
             # print("------------------------------------------------")
             # print("seq_id: ", seq_id)
@@ -330,10 +304,6 @@ class TrackingSampler(torch.utils.data.Dataset):
 
             # Sample frames
             seq_info_dict = dataset.get_sequence_info(seq_id)
-            print("------------------------------------------------")
-            print(seq_info_dict)
-            print(seq_info_dict['visible'])
-            print("------------------------------------------------")
             visible = seq_info_dict['visible']
 
             enough_visible_frames = visible.type(torch.int64).sum().item() > 2 * (
@@ -348,8 +318,8 @@ class TrackingSampler(torch.utils.data.Dataset):
         
     def get_one_search(self):
         # Select a dataset
-        # dataset = random.choices(self.datasets, self.p_datasets)[0]
-        dataset = random.choices(self.datasets, [1, 0, 0, 0, 0])[0]
+        dataset = random.choices(self.datasets, self.p_datasets)[0]
+        # dataset = random.choices(self.datasets, [1, 0, 0, 0, 0])[0]
 
         is_video_dataset = dataset.is_video_sequence()
         # sample a sequence
