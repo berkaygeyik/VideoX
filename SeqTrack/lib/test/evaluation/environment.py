@@ -69,6 +69,7 @@ class EnvSettings_ITP:
         self.vot_path = os.path.join(data_dir, 'VOT2019')
         self.got10k_path = os.path.join(data_dir, 'got10k')
         self.got10k_lmdb_path = os.path.join(data_dir, 'got10k_lmdb')
+        self.carotidartery_path = os.path.join(data_dir, 'carotidartery')
         self.lasot_path = os.path.join(data_dir, 'lasot')
         self.lasot_lmdb_path = os.path.join(data_dir, 'lasot_lmdb')
         self.lasot_extension_subset_path = os.path.join(data_dir, 'lasot_extension_subset')
