@@ -9,9 +9,12 @@ import sys
 from lib.utils.lmdb_utils import decode_img
 from pathlib import Path
 import numpy as np
+import glob
+import re
 
+from lib.test.utils.load_text import load_text
 
-def trackerlist(name: str, parameter_name: str, dataset_name: str, run_ids = None, display_name: str = None,
+def trackerlist(name: str, parameter_name: str, dataset_name: str, run_ids=None, display_name: str = None,
                 result_only=False):
     """Generate list of trackers.
     args:
@@ -45,6 +48,7 @@ class Tracker:
         self.display_name = display_name
 
         env = env_settings()
+        self.base_path = env.carotidartery_path
         if self.run_id is None:
             self.results_dir = '{}/{}/{}'.format(env.results_path, self.name, self.parameter_name)
         else:
@@ -115,6 +119,113 @@ class Tracker:
                 if key in tracker_out or val is not None:
                     output[key].append(val)
 
+        def draw_bounding_box(image, bbox, color=(255, 0, 0), thickness=2):
+            if isinstance(bbox, dict):
+                for obj_id, box in bbox.items():
+                    x, y, w, h = [int(v) for v in box]
+                    cv.rectangle(image, (x, y), (x + w, y + h), color, thickness)
+            else:
+                x, y, w, h = [int(v) for v in bbox]
+                cv.rectangle(image, (x, y), (x + w, y + h), color, thickness)
+            return image
+
+        def save_image_with_bbox(image, predicted_bbox, ground_truth_bbox, seq_name, frame_num):
+            output_dir = os.path.join("test", "visual_results", seq_name)
+            os.makedirs(output_dir, exist_ok=True)
+            image_with_predicted_bbox = draw_bounding_box(image.copy(), predicted_bbox, color=(255, 0, 0), thickness=2)
+            image_with_both_bboxes = draw_bounding_box(image_with_predicted_bbox, ground_truth_bbox, color=(0, 255, 0), thickness=2)
+            cv.imwrite(os.path.join(output_dir, f"{frame_num + 1}.png"), cv.cvtColor(image_with_both_bboxes, cv.COLOR_RGB2BGR))
+
+        
+        def create_video_from_images(seq_name, fps=30):
+            visual_results_folder = os.path.join("test", "visual_results")
+            video_results_folder = os.path.join("test", "video_results")
+            
+            os.makedirs(video_results_folder, exist_ok=True)
+            
+            image_folder = os.path.join(visual_results_folder, seq_name)
+            video_path = os.path.join(video_results_folder, f"{seq_name}.mp4")
+            
+            images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
+            
+            def numerical_sort(value):
+                parts = re.split(r'(\d+)', value)
+                return [int(part) if part.isdigit() else part for part in parts]
+            
+            images.sort(key=numerical_sort)
+            
+            if not images:
+                print(f"No images found in {image_folder} to create video.")
+                return
+            
+            first_image_path = os.path.join(image_folder, images[0])
+            frame = cv.imread(first_image_path)
+            height, width, _ = frame.shape
+            
+            fourcc = cv.VideoWriter_fourcc(*'mp4v')
+            video = cv.VideoWriter(video_path, fourcc, fps, (width, height))
+            
+            for image in images:
+                image_path = os.path.join(image_folder, image)
+                frame = cv.imread(image_path)
+                video.write(frame)
+            
+            video.release()
+            print(f"Video saved at {video_path}")
+
+        def combine_videos(output_path, fps=30):
+            video_results_folder = os.path.join("test", "video_results")
+            video_files = glob.glob(os.path.join(video_results_folder, "*.mp4"))
+            
+            if not video_files:
+                print("No video files found to combine.")
+                return
+            
+            # Sort video files numerically by their sequence names
+            def numerical_sort(value):
+                parts = re.split(r'(\d+)', os.path.basename(value))
+                return [int(part) if part.isdigit() else part for part in parts]
+            
+            video_files.sort(key=numerical_sort)
+            
+            # Read the first video to get dimensions
+            first_video = cv.VideoCapture(video_files[0])
+            if not first_video.isOpened():
+                print(f"Error opening video file {video_files[0]}")
+                return
+            
+            frame_width = int(first_video.get(cv.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(first_video.get(cv.CAP_PROP_FRAME_HEIGHT))
+            first_video.release()
+            
+            # Define the codec and create VideoWriter object
+            fourcc = cv.VideoWriter_fourcc(*'mp4v')  # codec for .mp4 files
+            combined_video = cv.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
+            
+            for video_file in video_files:
+                video = cv.VideoCapture(video_file)
+                while video.isOpened():
+                    ret, frame = video.read()
+                    if not ret:
+                        break
+                    combined_video.write(frame)
+                video.release()
+            
+            combined_video.release()
+            print(f"Combined video saved at {output_path}")
+
+        def _read_image(image_file):
+            if isinstance(image_file, str):
+                im = cv.imread(image_file)
+                return cv.cvtColor(im, cv.COLOR_BGR2RGB)
+            elif isinstance(image_file, list) and len(image_file) == 2:
+                return decode_img(image_file[0], image_file[1])
+            else:
+                raise ValueError("type of image_file should be str or list")
+
+        anno_path = '{}/{}/bounding_boxes_vessel.txt'.format(self.base_path, seq.name)
+        ground_truth_rect = load_text(str(anno_path), delimiter=' ', dtype=np.float64)
+
         # Initialize
         image = self._read_image(seq.frames[0])
         init_info['seq_name'] = seq.name
@@ -132,8 +243,10 @@ class Tracker:
 
         _store_outputs(out, init_default)
 
+        save_image_with_bbox(image, init_default['target_bbox'], ground_truth_rect[0], init_info['seq_name'], 0)
+
         for frame_num, frame_path in enumerate(seq.frames[1:], start=1):
-            image = self._read_image(frame_path)
+            image = _read_image(frame_path)
 
             start_time = time.time()
 
@@ -144,9 +257,15 @@ class Tracker:
             prev_output = OrderedDict(out)
             _store_outputs(out, {'time': time.time() - start_time})
 
+            save_image_with_bbox(image, out['target_bbox'], ground_truth_rect[frame_num], init_info['seq_name'], frame_num)
         for key in ['target_bbox', 'all_boxes', 'all_scores']:
             if key in output and len(output[key]) <= 1:
                 output.pop(key)
+
+        create_video_from_images(init_info['seq_name'])
+        # After processing all sequences, combine videos
+        # 
+        # combine_videos(output_path=os.path.join("test", "video_results", "combined_video.mp4"))
 
         return output
 
@@ -197,7 +316,7 @@ class Tracker:
             exit(-1)
         if optional_box is not None:
             assert isinstance(optional_box, (list, tuple))
-            assert len(optional_box) == 4, "valid box's foramt is [x,y,w,h]"
+            assert len(optional_box) == 4, "valid box's format is [x,y,w,h]"
             tracker.initialize(frame, _build_init_info(optional_box))
             output_boxes.append(optional_box)
         else:
