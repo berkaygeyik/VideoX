@@ -152,3 +152,65 @@ We would like to thank their authors for providing great libraries.
 
 
 
+
+# Carotid Artery Implenentation
+
+## Data Preparation Process
+
+To ensure the proper functionality of the code, it was necessary to create a structure suitable for the default data. As a result, structures appropriate for the data loaders were added, which can be found in the SeqTrack/data/.. directory. Except for the carotidartery folder, the other folders were added to enable the project to run correctly and do not have any additional effects.
+Modifications in YAML Files
+
+### In the .yaml files (located in SeqTrack/experiments/seqtrack/..):
+
+- Enabled the Carotidartery dataset and disabled other datasets.
+- Set the epoch numbers appropriately.
+- Adjusted the batch sizes accordingly.
+- Changes were made to the seqtrack_b256.yaml file as seqtrack_b256 was being used.
+
+Since the project was initially developed on Windows and later on Linux, Windows paths were commented out rather than deleted to preserve the option to run the project on Windows in the future. These changes are indicated with comments "#WINDOWS" and "#LINUX".
+
+
+Path Adjustments
+
+The files SeqTrack/lib/test/evaluation/local.py and SeqTrack/lib/train/admin/local.py are populated using the command from the SeqTrack project's README under the "Set project paths" section, with manual adjustments made for the carotidartery dataset as needed:
+```
+python tracking/create_default_local_file.py --workspace_dir . --data_dir ./data --save_dir .
+```
+
+Environment Adjustments
+
+    SeqTrack/lib/train/admin/environment.py was updated to include the carotidartery dataset in the environment.
+
+Data Loader Functions
+
+    SeqTrack/lib/train/base_functions.py was updated with functions for the carotidartery data loader.
+    SeqTrack/lib/train/data_specs/carotidartery_train_split.txt contains the names of training sequences.
+    SeqTrack/lib/train/dataset/carotidartery.py serves as the data loader for the carotidartery dataset, modeled after other data loaders like the "lasot" data loader.
+
+
+Data Preparation and Manipulation
+
+Scripts for data manipulation are located in the SeqTrack/data_preparation_scripts/.. directory:
+
+    image_reader.py: Helps read label images into a data structure.
+    nifti_reader.py: Assists in reading .nii files of nifti data type (currently not in use but not deleted).
+    png_to_jpg.py: Converts images to jpg format as loaders accept only jpg files.
+    rename_images.py: Renames images in each sequence starting from 00000001 in sequential order.
+    seg_to_bb.py: Converts segmentation format labels to bounding box format and writes to a txt file (groundtruth files are named "label_vessel.txt").
+
+Training Process
+
+The training process generates models saved as checkpoints after specific cycles. Training can continue from these checkpoints or can be used for testing.
+
+    SeqTrack/lib/train/trainers/base_trainer.py was modified to handle the loading of pretrained models. Adjustments were made to ensure parameters missing in the default pretrained model do not cause issues when continuing training.
+    SeqTrack/lib/train/trainers/ltr_trainer.py was modified to plot loss and IoU values, saved in the Seqtrack/charts/.. directory.
+
+Testing Process
+
+    SeqTrack/lib/test/evaluation/carotidarterydataset.py contains the main test class for the carotidartery dataset. A significant step here is the reduction of groundtruth bounding boxes by 10% to their original size using the shrink_bounding_box function. The list of test sequences is in the _get_sequence_list function.
+    SeqTrack/lib/test/evaluation/environment.py was updated to include the carotid artery test environment.
+    SeqTrack/lib/test/evaluation/tracker.py saw significant changes for data visualization. The modifications allow for adding predictions and groundtruths to image frames and subsequently creating videos. Image and video outputs are saved in the Seqtrack/test/.. directory under visual_results and video_results folders.
+
+Analysis Process
+
+    SeqTrack/tracking/analysis_results.py was updated to generate analysis results for the carotid artery dataset.
