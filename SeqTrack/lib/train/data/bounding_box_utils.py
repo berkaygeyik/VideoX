@@ -1,6 +1,5 @@
 import torch
-import cv2 as cv
-import numpy as np
+
 
 def rect_to_rel(bb, sz_norm=None):
     """Convert standard rectangular parametrization of the bounding box [x, y, w, h]

@@ -24,7 +24,7 @@ class CarotidarteryDataset(BaseDataset):
 
     def _construct_sequence(self, sequence_name):
         anno_path = '{}/{}/bounding_boxes_vessel.txt'.format(self.base_path, sequence_name)
-        # print(anno_path)
+        
         ground_truth_rect = load_text(str(anno_path), delimiter=' ', dtype=np.float64)
 
         occlusion_label_path = '{}/{}/zeros.txt'.format(self.base_path, sequence_name)
@@ -45,22 +45,31 @@ class CarotidarteryDataset(BaseDataset):
             
             return [x_center, y_center, round(shrunk_width, 1), round(shrunk_height, 1)]
 
+        target_class = ""
+        
         # shrink the bounding boxes %10 for the getting better accuracy
         ground_truth_rect_shrunk = np.array([shrink_bounding_box(bbox) for bbox in ground_truth_rect])
+        
 
         frames_path = '{}/{}/img'.format(self.base_path, sequence_name)
 
+        # use for expanded, not shrunk
         frames_list = ['{}/{:08d}.jpg'.format(frames_path, frame_number) for frame_number in range(1, ground_truth_rect.shape[0] + 1)]
-
-        target_class = ""
+        
+        # use for expanded, not shrunk
         return Sequence(sequence_name, frames_list, 'carotidartery', ground_truth_rect.reshape(-1, 4),
                         object_class=target_class, target_visible=target_visible)
+
+        # use for not expanded, shrunk
+        # frames_list = ['{}/{:08d}.jpg'.format(frames_path, frame_number) for frame_number in range(1, ground_truth_rect_shrunk.shape[0] + 1)]
+
+        # use for not expanded, shrunk
+        # return Sequence(sequence_name, frames_list, 'carotidartery', ground_truth_rect_shrunk.reshape(-1, 4),
+        #                 object_class=target_class, target_visible=target_visible)
 
     def __len__(self):
         return len(self.sequence_list)
 
     def _get_sequence_list(self):
-        sequence_list = ['carotid-1', 'carotid-5', 'carotid-9']
-        # sequence_list = ['carotid-1', 'carotid-2', 'carotid-3', 'carotid-4', 'carotid-5', 'carotid-6', 'carotid-7', 'carotid-8', 'carotid-9',
-        #                   'carotid-10', 'carotid-11', 'carotid-12', 'carotid-13', 'carotid-14', 'carotid-15', 'carotid-16', 'carotid-17']
+        sequence_list = ['carotid-1', 'carotid-5', 'carotid-9', "carotid-16"]
         return sequence_list

@@ -108,12 +108,12 @@ class TrackingSampler(torch.utils.data.Dataset):
         while not valid:
             # Select a dataset
             dataset = random.choices(self.datasets, self.p_datasets)[0]          
-            # dataset = random.choices(self.datasets, [0, 1, 0, 0, 0])[0] # update p_datasets -> DATASETS_RATIO (in seqtrack_b256.yml)
+
             is_video_dataset = dataset.is_video_sequence()
 
             # sample a sequence from the given dataset
             seq_id, visible, seq_info_dict = self.sample_seq_from_dataset(dataset, is_video_dataset)
-            
+
             if is_video_dataset:
                 template_frame_ids = None
                 search_frame_ids = None
@@ -161,6 +161,7 @@ class TrackingSampler(torch.utils.data.Dataset):
                 H, W, _ = template_frames[0].shape
                 template_masks = template_anno['mask'] if 'mask' in template_anno else [torch.zeros((H, W))] * self.num_template_frames
                 search_masks = search_anno['mask'] if 'mask' in search_anno else [torch.zeros((H, W))] * self.num_search_frames
+
                 data = TensorDict({'template_images': template_frames,
                                    'template_anno': template_anno['bbox'],
                                    'template_masks': template_masks,
@@ -171,13 +172,13 @@ class TrackingSampler(torch.utils.data.Dataset):
                                    'test_class': meta_obj_test.get('object_class_name')})
                 # make data augmentation
                 data = self.processing(data)
+
                 # check whether data is valid
                 valid = data['valid']
             except:
                 valid = False
 
             count_valid += 1
-            # print("count_valid: ",count_valid)
             if count_valid > 200:
                 print("too large count_valid")
                 print(str(count_valid))
@@ -214,8 +215,7 @@ class TrackingSampler(torch.utils.data.Dataset):
         while not valid:
             # Select a dataset
             dataset = random.choices(self.datasets, self.p_datasets)[0]
-            # dataset = random.choices(self.datasets, [1, 0, 0, 0, 0])[0]
-            
+
             is_video_dataset = dataset.is_video_sequence()
 
             # sample a sequence from the given dataset
@@ -245,6 +245,7 @@ class TrackingSampler(torch.utils.data.Dataset):
                 if random.random() < self.pos_prob:
                     label = torch.ones(1,)
                     search_frames, search_anno, meta_obj_test = dataset.get_frames(seq_id, search_frame_ids, seq_info_dict)
+
                     search_masks = search_anno['mask'] if 'mask' in search_anno else [torch.zeros(
                         (H, W))] * self.num_search_frames
                 # negative samples
@@ -297,12 +298,6 @@ class TrackingSampler(torch.utils.data.Dataset):
         while not enough_visible_frames:
             # Sample a sequence
             seq_id = random.randint(0, dataset.get_num_sequences() - 1)
-            # seq_id = random.randint(0, 112 - 1)
-            # print("------------------------------------------------")
-            # print("seq_id: ", seq_id)
-            # print("------------------------------------------------")
-
-            # Sample frames
             seq_info_dict = dataset.get_sequence_info(seq_id)
             visible = seq_info_dict['visible']
 
@@ -315,11 +310,10 @@ class TrackingSampler(torch.utils.data.Dataset):
                 print("too large count")
                 print(str(count))
         return seq_id, visible, seq_info_dict
-        
+
     def get_one_search(self):
         # Select a dataset
         dataset = random.choices(self.datasets, self.p_datasets)[0]
-        # dataset = random.choices(self.datasets, [1, 0, 0, 0, 0])[0]
 
         is_video_dataset = dataset.is_video_sequence()
         # sample a sequence

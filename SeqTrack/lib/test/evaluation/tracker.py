@@ -14,7 +14,7 @@ import re
 
 from lib.test.utils.load_text import load_text
 
-def trackerlist(name: str, parameter_name: str, dataset_name: str, run_ids=None, display_name: str = None,
+def trackerlist(name: str, parameter_name: str, dataset_name: str, run_ids = None, display_name: str = None,
                 result_only=False):
     """Generate list of trackers.
     args:
@@ -173,56 +173,6 @@ class Tracker:
             video.release()
             print(f"Video saved at {video_path}")
 
-        def combine_videos(output_path, fps=30):
-            video_results_folder = os.path.join("test", "video_results")
-            video_files = glob.glob(os.path.join(video_results_folder, "*.mp4"))
-            
-            if not video_files:
-                print("No video files found to combine.")
-                return
-            
-            # Sort video files numerically by their sequence names
-            def numerical_sort(value):
-                parts = re.split(r'(\d+)', os.path.basename(value))
-                return [int(part) if part.isdigit() else part for part in parts]
-            
-            video_files.sort(key=numerical_sort)
-            
-            # Read the first video to get dimensions
-            first_video = cv.VideoCapture(video_files[0])
-            if not first_video.isOpened():
-                print(f"Error opening video file {video_files[0]}")
-                return
-            
-            frame_width = int(first_video.get(cv.CAP_PROP_FRAME_WIDTH))
-            frame_height = int(first_video.get(cv.CAP_PROP_FRAME_HEIGHT))
-            first_video.release()
-            
-            # Define the codec and create VideoWriter object
-            fourcc = cv.VideoWriter_fourcc(*'mp4v')  # codec for .mp4 files
-            combined_video = cv.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
-            
-            for video_file in video_files:
-                video = cv.VideoCapture(video_file)
-                while video.isOpened():
-                    ret, frame = video.read()
-                    if not ret:
-                        break
-                    combined_video.write(frame)
-                video.release()
-            
-            combined_video.release()
-            print(f"Combined video saved at {output_path}")
-
-        def _read_image(image_file):
-            if isinstance(image_file, str):
-                im = cv.imread(image_file)
-                return cv.cvtColor(im, cv.COLOR_BGR2RGB)
-            elif isinstance(image_file, list) and len(image_file) == 2:
-                return decode_img(image_file[0], image_file[1])
-            else:
-                raise ValueError("type of image_file should be str or list")
-
         anno_path = '{}/{}/bounding_boxes_vessel.txt'.format(self.base_path, seq.name)
         ground_truth_rect = load_text(str(anno_path), delimiter=' ', dtype=np.float64)
 
@@ -246,7 +196,7 @@ class Tracker:
         save_image_with_bbox(image, init_default['target_bbox'], ground_truth_rect[0], init_info['seq_name'], 0)
 
         for frame_num, frame_path in enumerate(seq.frames[1:], start=1):
-            image = _read_image(frame_path)
+            image = self._read_image(frame_path)
 
             start_time = time.time()
 
@@ -263,9 +213,6 @@ class Tracker:
                 output.pop(key)
 
         create_video_from_images(init_info['seq_name'])
-        # After processing all sequences, combine videos
-        # 
-        # combine_videos(output_path=os.path.join("test", "video_results", "combined_video.mp4"))
 
         return output
 
